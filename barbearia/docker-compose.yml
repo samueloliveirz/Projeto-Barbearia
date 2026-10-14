@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16
+    container_name: navalha-db
+    environment:
+      POSTGRES_DB: navalha
+      POSTGRES_USER: navalha
+      POSTGRES_PASSWORD: navalha123
+    ports:
+      - "5433:5432"
+    volumes:
+      - navalha-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: navalha-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@navalha.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5051:80"
+    depends_on:
+      - db
+
+volumes:
+  navalha-data:

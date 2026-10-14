@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: barbearia
+  datasource:
+    url: jdbc:postgresql://localhost:5433/navalha
+    username: navalha
+    password: SUA_SENHA
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
