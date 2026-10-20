@@ -1,11 +1,13 @@
 package com.barbearia.controller;
 
 import com.barbearia.dto.TransactionDTO;
+import com.barbearia.model.Barbershop;
 import com.barbearia.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -19,35 +21,35 @@ public class TransactionController {
     private TransactionService service;
 
     @GetMapping
-    public ResponseEntity<List<TransactionDTO>> findAll(@RequestParam Long barbershopId) {
-        return ResponseEntity.ok(service.findAll(barbershopId));
+    public ResponseEntity<List<TransactionDTO>> findAll(@AuthenticationPrincipal Barbershop barbershop) {
+        return ResponseEntity.ok(service.findAll(barbershop.getId()));
     }
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<TransactionDTO> findById(
-            @PathVariable Long id, @RequestParam Long barbershopId) {
-        return ResponseEntity.ok(service.findById(id, barbershopId));
+            @PathVariable Long id, @AuthenticationPrincipal Barbershop barbershop) {
+        return ResponseEntity.ok(service.findById(id, barbershop.getId()));
     }
 
     @GetMapping(value = "/by-date")
     public ResponseEntity<List<TransactionDTO>> findByDate(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam Long barbershopId) {
-        return ResponseEntity.ok(service.findByDate(date, barbershopId));
+            @AuthenticationPrincipal Barbershop barbershop) {
+        return ResponseEntity.ok(service.findByDate(date, barbershop.getId()));
     }
 
     @GetMapping(value = "/by-period")
     public ResponseEntity<List<TransactionDTO>> findByPeriod(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @RequestParam Long barbershopId) {
-        return ResponseEntity.ok(service.findByPeriod(start, end, barbershopId));
+            @AuthenticationPrincipal Barbershop barbershop) {
+        return ResponseEntity.ok(service.findByPeriod(start, end, barbershop.getId()));
     }
 
     @PostMapping
     public ResponseEntity<TransactionDTO> insert(
-            @Valid @RequestBody TransactionDTO dto, @RequestParam Long barbershopId) {
-        return ResponseEntity.ok(service.insert(dto, barbershopId));
+            @Valid @RequestBody TransactionDTO dto, @AuthenticationPrincipal Barbershop barbershop) {
+        return ResponseEntity.ok(service.insert(dto, barbershop.getId()));
     }
 
     @DeleteMapping(value = "/{id}")
