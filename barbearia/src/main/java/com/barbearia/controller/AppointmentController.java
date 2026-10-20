@@ -1,6 +1,7 @@
 package com.barbearia.controller;
 
 import com.barbearia.dto.AppointmentDTO;
+import com.barbearia.dto.AppointmentResponseDTO;
 import com.barbearia.model.Appointment;
 import com.barbearia.model.Barbershop;
 import com.barbearia.service.AppointmentService;
@@ -20,18 +21,19 @@ public class AppointmentController {
     private AppointmentService service;
 
     @GetMapping
-    public ResponseEntity<List<Appointment>> findAll(@AuthenticationPrincipal Barbershop barbershop) {
+    public ResponseEntity<List<AppointmentResponseDTO>> findAll(
+            @AuthenticationPrincipal Barbershop barbershop) {
         return ResponseEntity.ok(service.findAll(barbershop.getId()));
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Appointment> findById(
+    public ResponseEntity<AppointmentResponseDTO> findById(
             @PathVariable Long id, @AuthenticationPrincipal Barbershop barbershop) {
         return ResponseEntity.ok(service.findById(id, barbershop.getId()));
     }
 
     @PostMapping
-    public ResponseEntity<Appointment> insert(
+    public ResponseEntity<AppointmentResponseDTO> insert(
             @Valid @RequestBody AppointmentDTO dto, @AuthenticationPrincipal Barbershop barbershop) {
         return ResponseEntity.ok(service.insert(dto, barbershop.getId()));
     }
