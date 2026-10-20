@@ -18,3 +18,7 @@ spring:
 
 server:
   port: 8080
+
+jwt:
+  secret: minhaChaveSecretaSuperSeguraComPeloMenos32Caracteres123
+  expiration: 86400000
