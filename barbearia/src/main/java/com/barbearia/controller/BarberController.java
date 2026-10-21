@@ -1,5 +1,6 @@
 package com.barbearia.controller;
 
+import com.barbearia.dto.BarbershopResponseDTO;
 import com.barbearia.model.Barber;
 import com.barbearia.model.Barbershop;
 import com.barbearia.service.BarberService;
@@ -47,4 +48,6 @@ public class BarberController {
         service.delete(id, barbershop.getId());
         return ResponseEntity.noContent().build();
     }
+
+ 
 }
