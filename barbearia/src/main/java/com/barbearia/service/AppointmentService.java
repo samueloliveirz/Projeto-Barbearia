@@ -1,7 +1,8 @@
 package com.barbearia.service;
 
-import com.barbearia.dto.AppointmentDTO;
+import com.barbearia.dto.AppointmentRequestDTO;
 import com.barbearia.dto.AppointmentResponseDTO;
+import com.barbearia.dto.AppointmentUpdateDTO;
 import com.barbearia.enums.AppointmentStatus;
 import com.barbearia.enums.PaymentStatus;
 import com.barbearia.model.*;
@@ -46,7 +47,7 @@ public class AppointmentService {
     }
 
 
-    public AppointmentResponseDTO insert(AppointmentDTO dto, Long barbershopId) {
+    public AppointmentResponseDTO insert(AppointmentRequestDTO dto, Long barbershopId) {
 
 
         Barbershop shop = barbershopRepository.findById(barbershopId)
@@ -82,20 +83,20 @@ public class AppointmentService {
         return new AppointmentResponseDTO(salvo);
     }
 
-    public Appointment update(Long id, Appointment obj, Long barbershopId) {
+    public AppointmentResponseDTO update(Long id, AppointmentUpdateDTO dto, Long barbershopId) {
         Appointment entity = repository.findByIdAndBarbershopId(id, barbershopId)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
 
-        if (!entity.getDateTime().equals(obj.getDateTime())) {
-            verificarDisponibilidade(obj.getDateTime(), entity.getBarber().getId());
+        if (!entity.getDateTime().equals(dto.dateTime())) {
+            verificarDisponibilidade(dto.dateTime(), entity.getBarber().getId());
         }
 
-        entity.setDateTime(obj.getDateTime());
-        entity.setStatus(obj.getStatus());
-        entity.setPaymentStatus(obj.getPaymentStatus());
-        entity.setValue(obj.getValue());
+        entity.setDateTime(dto.dateTime());
+        entity.setStatus(dto.status());
+        entity.setPaymentStatus(dto.paymentStatus());
 
-        return repository.save(entity);
+        Appointment salvo = repository.save(entity);
+        return new AppointmentResponseDTO(salvo);
     }
 
     public void delete(Long id, Long barbershopId) {

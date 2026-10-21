@@ -1,8 +1,8 @@
 package com.barbearia.controller;
 
-import com.barbearia.dto.AppointmentDTO;
+import com.barbearia.dto.AppointmentRequestDTO;
 import com.barbearia.dto.AppointmentResponseDTO;
-import com.barbearia.model.Appointment;
+import com.barbearia.dto.AppointmentUpdateDTO;
 import com.barbearia.model.Barbershop;
 import com.barbearia.service.AppointmentService;
 import jakarta.validation.Valid;
@@ -34,15 +34,15 @@ public class AppointmentController {
 
     @PostMapping
     public ResponseEntity<AppointmentResponseDTO> insert(
-            @Valid @RequestBody AppointmentDTO dto, @AuthenticationPrincipal Barbershop barbershop) {
+            @Valid @RequestBody AppointmentRequestDTO dto, @AuthenticationPrincipal Barbershop barbershop) {
         return ResponseEntity.ok(service.insert(dto, barbershop.getId()));
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Appointment> update(
-            @PathVariable Long id, @RequestBody Appointment obj,
+    public ResponseEntity<AppointmentResponseDTO> update(
+            @PathVariable Long id, @Valid @RequestBody AppointmentUpdateDTO dto,
             @AuthenticationPrincipal Barbershop barbershop) {
-        return ResponseEntity.ok(service.update(id, obj, barbershop.getId()));
+        return ResponseEntity.ok(service.update(id, dto, barbershop.getId()));
     }
 
     @DeleteMapping(value = "/{id}")

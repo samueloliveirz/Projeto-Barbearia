@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 
-public record AppointmentDTO(
+public record AppointmentRequestDTO(
         @NotBlank String clientName,
         @NotBlank String phone,
         @NotNull Long serviceId,
