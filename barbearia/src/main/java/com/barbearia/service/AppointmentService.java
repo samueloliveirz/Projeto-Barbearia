@@ -124,4 +124,6 @@ public class AppointmentService {
                     return clientRepository.save(novo);
                 });
     }
+
+
 }
