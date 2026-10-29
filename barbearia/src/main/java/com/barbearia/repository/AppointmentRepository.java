@@ -30,6 +30,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByPaymentStatusAndBarbershopId(
             PaymentStatus paymentStatus, Long barbershopId);
 
+    List<Appointment> findByClient_PhoneAndBarbershopId(String phone, Long barbershopId);
+
     @Query("SELECT COALESCE(SUM(a.value), 0) FROM Appointment a " +
             "WHERE a.paymentStatus = :paymentStatus AND a.barbershop.id = :barbershopId")
     BigDecimal sumValueByPaymentStatusAndBarbershopId(

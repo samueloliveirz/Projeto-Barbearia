@@ -2,8 +2,10 @@ package com.barbearia.service;
 
 import com.barbearia.dto.AppointmentRequestDTO;
 import com.barbearia.enums.ConversaEstado;
+import com.barbearia.model.Appointment;
 import com.barbearia.model.Barber;
 import com.barbearia.model.Conversa;
+import com.barbearia.repository.AppointmentRepository;
 import com.barbearia.repository.BarberRepository;
 import com.barbearia.repository.ConversaRepository;
 import com.barbearia.repository.ServiceRepository;
@@ -26,15 +28,18 @@ public class WebhookService {
     private final BarberRepository barberRepository;
     private final AppointmentService appointmentService;
     private final ConversaRepository conversaRepository;
+    private final AppointmentRepository appointmentRepository;
 
     public WebhookService(ServiceRepository serviceRepository,
                           BarberRepository barberRepository,
                           AppointmentService appointmentService,
-                          ConversaRepository conversaRepository) {
+                          ConversaRepository conversaRepository,
+                          AppointmentRepository appointmentRepository) {
         this.serviceRepository = serviceRepository;
         this.barberRepository = barberRepository;
         this.appointmentService = appointmentService;
         this.conversaRepository = conversaRepository;
+        this.appointmentRepository = appointmentRepository;
     }
 
     public String processarMensagem(String telefone, String mensagem) {
@@ -62,6 +67,9 @@ public class WebhookService {
         if (mensagem.equals("1")) {
             conversa.setEstado(ConversaEstado.AGUARDANDO_NOME);
             return "Legal! Qual é o seu nome?";
+        }
+        if (mensagem.equals("2")) {
+            return montarMeusAgendamentos(conversa.getTelefone());
         }
         return """
                 Olá! Bem-vindo à Barbearia.
@@ -160,6 +168,24 @@ public class WebhookService {
         }
 
         return "Digite SIM para confirmar ou NAO para cancelar.";
+    }
+
+    private String montarMeusAgendamentos(String telefone) {
+        List<Appointment> agendamentos =
+                appointmentRepository.findByClient_PhoneAndBarbershopId(telefone, BARBEARIA_ID);
+
+        if (agendamentos.isEmpty()) {
+            return "Você ainda não tem agendamentos. Digite 1 para agendar.";
+        }
+
+        StringBuilder sb = new StringBuilder("Seus agendamentos:\n");
+        for (Appointment a : agendamentos) {
+            sb.append("- ").append(a.getService().getName())
+                    .append(" com ").append(a.getBarber().getName())
+                    .append(" em ").append(a.getDateTime().format(FORMATO))
+                    .append(" (").append(a.getStatus()).append(")\n");
+        }
+        return sb.toString();
     }
 
     private String montarListaServicos() {
