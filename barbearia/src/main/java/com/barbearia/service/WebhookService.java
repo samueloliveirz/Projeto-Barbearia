@@ -3,7 +3,9 @@ package com.barbearia.service;
 import com.barbearia.dto.AppointmentRequestDTO;
 import com.barbearia.enums.ConversaEstado;
 import com.barbearia.model.Barber;
+import com.barbearia.model.Conversa;
 import com.barbearia.repository.BarberRepository;
+import com.barbearia.repository.ConversaRepository;
 import com.barbearia.repository.ServiceRepository;
 import com.barbearia.service.exceptions.HorarioIndisponivelException;
 import org.springframework.stereotype.Service;
@@ -11,9 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class WebhookService {
@@ -25,21 +25,27 @@ public class WebhookService {
     private final ServiceRepository serviceRepository;
     private final BarberRepository barberRepository;
     private final AppointmentService appointmentService;
-
-    private final Map<String, Conversa> conversas = new HashMap<>();
+    private final ConversaRepository conversaRepository;
 
     public WebhookService(ServiceRepository serviceRepository,
                           BarberRepository barberRepository,
-                          AppointmentService appointmentService) {
+                          AppointmentService appointmentService,
+                          ConversaRepository conversaRepository) {
         this.serviceRepository = serviceRepository;
         this.barberRepository = barberRepository;
         this.appointmentService = appointmentService;
+        this.conversaRepository = conversaRepository;
     }
 
     public String processarMensagem(String telefone, String mensagem) {
-        Conversa conversa = conversas.computeIfAbsent(telefone, k -> new Conversa());
+        Conversa conversa = conversaRepository.findByTelefone(telefone)
+                .orElseGet(() -> {
+                    Conversa nova = new Conversa();
+                    nova.setTelefone(telefone);
+                    return nova;
+                });
 
-        return switch (conversa.getEstado()) {
+        String resposta = switch (conversa.getEstado()) {
             case INICIO -> tratarInicio(conversa, mensagem);
             case AGUARDANDO_NOME -> tratarNome(conversa, mensagem);
             case ESCOLHENDO_SERVICO -> tratarEscolhaServico(conversa, mensagem);
@@ -47,6 +53,9 @@ public class WebhookService {
             case ESCOLHENDO_HORARIO -> tratarEscolhaHorario(conversa, mensagem);
             case CONFIRMANDO -> tratarConfirmacao(conversa, telefone, mensagem);
         };
+
+        conversaRepository.save(conversa);
+        return resposta;
     }
 
     private String tratarInicio(Conversa conversa, String mensagem) {
@@ -136,16 +145,17 @@ public class WebhookService {
             try {
                 appointmentService.insert(dto, BARBEARIA_ID);
             } catch (HorarioIndisponivelException e) {
-                conversas.remove(telefone);
+                conversa.resetar();
                 return "Ops, esse horário acabou de ser ocupado. Digite 1 para tentar de novo.";
             }
 
-            conversas.remove(telefone);
-            return "Agendamento confirmado, " + conversa.getNome() + "! Até breve.";
+            String nome = conversa.getNome();
+            conversa.resetar();
+            return "Agendamento confirmado, " + nome + "! Até breve.";
         }
 
         if (resposta.equalsIgnoreCase("nao") || resposta.equalsIgnoreCase("não")) {
-            conversas.remove(telefone);
+            conversa.resetar();
             return "Agendamento cancelado. Digite 1 quando quiser agendar.";
         }
 
