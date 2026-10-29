@@ -41,6 +41,7 @@ public class WebhookService {
 
         return switch (conversa.getEstado()) {
             case INICIO -> tratarInicio(conversa, mensagem);
+            case AGUARDANDO_NOME -> tratarNome(conversa, mensagem);
             case ESCOLHENDO_SERVICO -> tratarEscolhaServico(conversa, mensagem);
             case ESCOLHENDO_BARBEIRO -> tratarEscolhaBarbeiro(conversa, mensagem);
             case ESCOLHENDO_HORARIO -> tratarEscolhaHorario(conversa, mensagem);
@@ -50,14 +51,24 @@ public class WebhookService {
 
     private String tratarInicio(Conversa conversa, String mensagem) {
         if (mensagem.equals("1")) {
-            conversa.setEstado(ConversaEstado.ESCOLHENDO_SERVICO);
-            return montarListaServicos();
+            conversa.setEstado(ConversaEstado.AGUARDANDO_NOME);
+            return "Legal! Qual é o seu nome?";
         }
         return """
                 Olá! Bem-vindo à Barbearia.
                 Digite:
                 1 - Agendar um horário
                 2 - Ver meus agendamentos""";
+    }
+
+    private String tratarNome(Conversa conversa, String mensagem) {
+        String nome = mensagem.trim();
+        if (nome.isBlank()) {
+            return "Por favor, me diga seu nome.";
+        }
+        conversa.setNome(nome);
+        conversa.setEstado(ConversaEstado.ESCOLHENDO_SERVICO);
+        return "Prazer, " + nome + "!\n\n" + montarListaServicos();
     }
 
     private String tratarEscolhaServico(Conversa conversa, String mensagem) {
@@ -115,7 +126,7 @@ public class WebhookService {
 
         if (resposta.equalsIgnoreCase("sim")) {
             AppointmentRequestDTO dto = new AppointmentRequestDTO(
-                    "Cliente " + telefone,
+                    conversa.getNome(),
                     telefone,
                     conversa.getServiceId(),
                     conversa.getBarberId(),
@@ -130,7 +141,7 @@ public class WebhookService {
             }
 
             conversas.remove(telefone);
-            return "Agendamento confirmado! Até breve.";
+            return "Agendamento confirmado, " + conversa.getNome() + "! Até breve.";
         }
 
         if (resposta.equalsIgnoreCase("nao") || resposta.equalsIgnoreCase("não")) {
@@ -172,11 +183,13 @@ public class WebhookService {
 
         return """
                 Confirme seu agendamento:
+                Nome: %s
                 Serviço: %s
                 Barbeiro: %s
                 Data: %s
 
                 Digite SIM para confirmar ou NAO para cancelar.""".formatted(
+                conversa.getNome(),
                 servico.getName(),
                 barbeiro.getName(),
                 conversa.getDateTime().format(FORMATO));

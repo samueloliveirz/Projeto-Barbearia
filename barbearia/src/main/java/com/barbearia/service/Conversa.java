@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 public class Conversa {
     private ConversaEstado estado = ConversaEstado.INICIO;
+    private String nome;
     private Long serviceId;
     private Long barberId;
     private LocalDateTime dateTime;
