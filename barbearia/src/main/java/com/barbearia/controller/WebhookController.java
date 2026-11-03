@@ -3,6 +3,7 @@ package com.barbearia.controller;
 import com.barbearia.service.WebhookService;
 import com.barbearia.service.WhatsappApiService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,12 +25,12 @@ public class WebhookController {
         this.whatsappApiService = whatsappApiService;
     }
 
+    // ===== META (Cloud API) — fica pro portfólio =====
     @GetMapping("/whatsapp")
     public ResponseEntity<String> verificar(
             @RequestParam("hub.mode") String mode,
             @RequestParam("hub.verify_token") String token,
             @RequestParam("hub.challenge") String challenge) {
-
         if ("subscribe".equals(mode) && verifyToken.equals(token)) {
             return ResponseEntity.ok(challenge);
         }
@@ -42,13 +43,28 @@ public class WebhookController {
             Mensagem msg = extrairMensagem(payload);
             if (msg != null) {
                 String resposta = webhookService.processarMensagem(msg.telefone(), msg.texto());
-                System.out.println("Recebi de " + msg.telefone() + ": " + msg.texto());
                 whatsappApiService.enviarMensagem(msg.telefone(), resposta);
             }
         } catch (Exception e) {
             System.out.println("Webhook ignorado: " + e.getMessage());
         }
         return ResponseEntity.ok().build();
+    }
+
+    // ===== TWILIO (sandbox) — pra ver funcionando =====
+    @PostMapping(value = "/twilio", produces = MediaType.APPLICATION_XML_VALUE)
+    public String receberTwilio(@RequestParam("From") String from,
+                                @RequestParam("Body") String body) {
+        String telefone = from.replace("whatsapp:", "");
+        System.out.println("Twilio recebeu de " + telefone + ": " + body);
+
+        String resposta = webhookService.processarMensagem(telefone, body);
+
+        return "<Response><Message>" + escaparXml(resposta) + "</Message></Response>";
+    }
+
+    private String escaparXml(String texto) {
+        return texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     @SuppressWarnings("unchecked")
@@ -62,7 +78,6 @@ public class WebhookController {
         if (messages == null || messages.isEmpty()) {
             return null;
         }
-
         Map<String, Object> message = messages.get(0);
         String telefone = (String) message.get("from");
         Map<String, Object> text = (Map<String, Object>) message.get("text");
