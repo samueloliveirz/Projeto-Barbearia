@@ -22,3 +22,6 @@ server:
 jwt:
   secret: minhaChaveSecretaSuperSeguraComPeloMenos32Caracteres123
   expiration: 86400000
+
+whatsapp:
+  verify-token: navalha_verifica_2026
