@@ -11,6 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
     show-sql: true
     properties:
       hibernate:
@@ -25,3 +26,6 @@ jwt:
 
 whatsapp:
   verify-token: navalha_verifica_2026
+  phone-number-id: 1464074893452109
+  access-token: ${WHATSAPP_ACCESS_TOKEN}
+  api-version: v25.0

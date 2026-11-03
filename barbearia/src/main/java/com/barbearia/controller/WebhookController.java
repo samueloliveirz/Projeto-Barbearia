@@ -1,6 +1,7 @@
 package com.barbearia.controller;
 
 import com.barbearia.service.WebhookService;
+import com.barbearia.service.WhatsappApiService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +14,14 @@ import java.util.Map;
 public class WebhookController {
 
     private final WebhookService webhookService;
+    private final WhatsappApiService whatsappApiService;
 
     @Value("${whatsapp.verify-token}")
     private String verifyToken;
 
-    public WebhookController(WebhookService webhookService) {
+    public WebhookController(WebhookService webhookService, WhatsappApiService whatsappApiService) {
         this.webhookService = webhookService;
+        this.whatsappApiService = whatsappApiService;
     }
 
     @GetMapping("/whatsapp")
@@ -40,11 +43,10 @@ public class WebhookController {
             if (msg != null) {
                 String resposta = webhookService.processarMensagem(msg.telefone(), msg.texto());
                 System.out.println("Recebi de " + msg.telefone() + ": " + msg.texto());
-                System.out.println("Bot responderia: " + resposta);
-                // PRÓXIMO PASSO: enviar 'resposta' de volta pela Cloud API
+                whatsappApiService.enviarMensagem(msg.telefone(), resposta);
             }
         } catch (Exception e) {
-            System.out.println("Webhook ignorado (não era mensagem de texto): " + e.getMessage());
+            System.out.println("Webhook ignorado: " + e.getMessage());
         }
         return ResponseEntity.ok().build();
     }
