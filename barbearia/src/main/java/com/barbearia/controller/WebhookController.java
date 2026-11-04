@@ -25,7 +25,7 @@ public class WebhookController {
         this.whatsappApiService = whatsappApiService;
     }
 
-    // ===== META (Cloud API) — fica pro portfólio =====
+    // META (Cloud API) — fica pro portfólio
     @GetMapping("/whatsapp")
     public ResponseEntity<String> verificar(
             @RequestParam("hub.mode") String mode,
@@ -51,7 +51,7 @@ public class WebhookController {
         return ResponseEntity.ok().build();
     }
 
-    // ===== TWILIO (sandbox) — pra ver funcionando =====
+    // TWILIO (sandbox) — o que você viu funcionando no zap
     @PostMapping(value = "/twilio", produces = MediaType.APPLICATION_XML_VALUE)
     public String receberTwilio(@RequestParam("From") String from,
                                 @RequestParam("Body") String body) {

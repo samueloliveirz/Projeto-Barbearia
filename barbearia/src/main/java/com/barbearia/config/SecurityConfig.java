@@ -3,6 +3,7 @@ package com.barbearia.config;
 import com.barbearia.service.BarbershopUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -39,8 +40,29 @@ public class SecurityConfig {
         return new ProviderManager(provider);
     }
 
+    // GUARDA DAS TELAS (Thymeleaf): login por formulário + sessão/cookie
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/login", "/logout", "/painel/**")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/login").permitAll()
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/painel", true)
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll());
+        return http.build();
+    }
+
+    // GUARDA DA API (bot, Postman, futuro React): JWT, sem sessão
+    @Bean
+    @Order(2)
+    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->

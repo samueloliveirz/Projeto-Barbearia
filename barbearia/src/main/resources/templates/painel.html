@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel - Barbearia</title>
+</head>
+<body>
+<h1>Painel</h1>
+<p>Você está logado! 🎉</p>
+
+<form th:action="@{/logout}" method="post">
+  <button type="submit">Sair</button>
+</form>
+</body>
+</html>
