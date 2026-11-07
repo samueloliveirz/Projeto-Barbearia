@@ -1,15 +1,22 @@
 package com.barbearia.controller;
 
+import com.barbearia.dto.PayableDTO;
+import com.barbearia.enums.AccountStatus;
 import com.barbearia.model.Appointment;
 import com.barbearia.model.Barbershop;
 import com.barbearia.model.Client;
 import com.barbearia.repository.AppointmentRepository;
 import com.barbearia.repository.ClientRepository;
 import com.barbearia.service.FinanceService;
+import com.barbearia.service.PayableService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,13 +30,16 @@ public class WebController {
     private final AppointmentRepository appointmentRepository;
     private final ClientRepository clientRepository;
     private final FinanceService financeService;
+    private final PayableService payableService;
 
     public WebController(AppointmentRepository appointmentRepository,
                          ClientRepository clientRepository,
-                         FinanceService financeService) {
+                         FinanceService financeService,
+                         PayableService payableService) {
         this.appointmentRepository = appointmentRepository;
         this.clientRepository = clientRepository;
         this.financeService = financeService;
+        this.payableService = payableService;
     }
 
     @GetMapping("/login")
@@ -88,6 +98,36 @@ public class WebController {
         model.addAttribute("ticketMedio", financeService.dailyAverageTicket(hoje, id));
         model.addAttribute("clientesHoje", financeService.dailyClientCount(hoje, id));
         return "caixa";
+    }
+
+    @GetMapping("/painel/contas")
+    public String contas(@AuthenticationPrincipal Barbershop barbearia, Model model) {
+        List<PayableDTO> contas = payableService.findAll(barbearia.getId());
+
+        BigDecimal totalPendente = contas.stream()
+                .filter(c -> c.status() != AccountStatus.PAGO)
+                .map(PayableDTO::amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        model.addAttribute("barbearia", barbearia);
+        model.addAttribute("contas", contas);
+        model.addAttribute("totalPendente", totalPendente);
+        return "contas";
+    }
+
+    @PostMapping("/painel/contas")
+    public String novaConta(@AuthenticationPrincipal Barbershop barbearia,
+                            @RequestParam String description,
+                            @RequestParam BigDecimal amount,
+                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDate) {
+        payableService.insert(new PayableDTO(null, description, amount, dueDate, null), barbearia.getId());
+        return "redirect:/painel/contas";
+    }
+
+    @PostMapping("/painel/contas/{id}/pagar")
+    public String pagarConta(@PathVariable Long id, @AuthenticationPrincipal Barbershop barbearia) {
+        payableService.markAsPaid(id, barbearia.getId());
+        return "redirect:/painel/contas";
     }
 
     public record ClienteView(String nome, String telefone, int cortes, BigDecimal gasto) {}
