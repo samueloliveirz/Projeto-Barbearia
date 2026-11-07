@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navalha — Fiado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg:#17120e;--surface:#201810;--surface-2:#2a2017;--line:#352a1f;--line-strong:#4a3a2a;
+            --brass:#cda45c;--brass-dim:#9a7c4a;--clay:#bd6145;--cream:#f0e6d6;--muted:#a48d74;
+            --muted-2:#6e5c48;--sage:#7aa06a;--font-d:'Fraunces',serif;--font-b:'Inter',sans-serif;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        svg.i{stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+        body{font-family:var(--font-b);background:#0e0b08;color:var(--cream);min-height:100vh}
+
+        .app{min-height:100vh;display:flex;flex-direction:column}
+        .sidebar{display:none}
+
+        .topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 12px}
+        .topbar .logo{display:flex;align-items:center;gap:10px}
+        .topbar .nav-ico{width:34px;height:34px;display:grid;place-items:center;color:var(--brass);
+            border:1px solid var(--line-strong);border-radius:10px}
+        .topbar .nav-ico svg{width:19px;height:19px}
+        .topbar b{font-family:var(--font-d);font-weight:600;font-size:23px;color:var(--cream)}
+        .me{width:38px;height:38px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line-strong);
+            display:grid;place-items:center;font-family:var(--font-d);font-weight:600;font-size:15px;color:var(--brass)}
+
+        .main{flex:1}
+        .content{padding:8px 24px 104px}
+
+        .head{margin:12px 0 20px}
+        .head .back{font-size:13px;color:var(--brass);text-decoration:none}
+        .head h1{font-family:var(--font-d);font-weight:600;font-size:27px;line-height:1.1;color:var(--cream)}
+
+        .hero{padding:4px 2px 20px;border-bottom:1px solid var(--line);margin-bottom:22px}
+        .hero .cap{font-size:13px;color:var(--muted);margin-bottom:7px}
+        .hero .amount{font-family:var(--font-d);font-weight:600;font-size:44px;line-height:.95;color:var(--clay);
+            font-variant-numeric:tabular-nums}
+        .hero .amount .cur{font-size:22px;color:var(--brass-dim);margin-right:3px}
+
+        .sec{display:flex;align-items:baseline;justify-content:space-between;margin:2px 0 13px}
+        .sec h2{font-family:var(--font-d);font-weight:600;font-size:17px;color:var(--cream)}
+
+        .debt{display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)}
+        .debt:last-of-type{border-bottom:none}
+        .ava{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-family:var(--font-d);
+            font-weight:600;font-size:16px;color:var(--cream);background:var(--surface-2);border:1px solid var(--line-strong);flex-shrink:0}
+        .debt-main{flex:1;min-width:0}
+        .dn{font-weight:600;font-size:14.5px}
+        .dw{font-size:12.5px;color:var(--muted);margin-top:2px}
+        .debt-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+        .da{font-family:var(--font-d);font-weight:600;font-size:16px;color:var(--clay);font-variant-numeric:tabular-nums}
+        .pay{background:none;border:1px solid var(--line-strong);color:var(--sage);font-family:inherit;
+            font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:20px;cursor:pointer;white-space:nowrap}
+        .pay:hover{background:rgba(122,160,106,.1)}
+
+        .note{display:flex;gap:10px;margin-top:8px;padding:16px;border:1px solid var(--line);border-radius:14px;
+            font-size:13.5px;color:var(--muted);line-height:1.5}
+        .note svg{width:18px;height:18px;color:var(--brass);margin-top:1px;flex-shrink:0}
+
+        .exit{width:100%;margin-top:26px;background:none;border:1px solid var(--line);color:var(--clay);
+            font-family:inherit;font-size:14.5px;font-weight:600;padding:15px;border-radius:13px;cursor:pointer}
+
+        .tabbar{position:fixed;bottom:0;left:0;right:0;height:76px;background:rgba(23,18,14,.94);
+            backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;align-items:center;
+            justify-content:space-around;padding:0 8px 8px;z-index:10}
+        .tabbar a{background:none;border:none;color:var(--muted-2);font-family:inherit;cursor:pointer;text-decoration:none;
+            display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;padding:8px 10px}
+        .tabbar a.on{color:var(--brass)}
+        .tabbar a svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+        .tabbar a.fab{width:50px;height:50px;border-radius:16px;background:var(--brass);color:#1c1509;
+            display:grid;place-items:center;margin-top:-20px;box-shadow:0 8px 20px -6px rgba(205,164,92,.45)}
+        .tabbar a.fab svg{width:24px;height:24px;stroke-width:2}
+
+        /* ================= DESKTOP ================= */
+        @media(min-width:900px){
+            body{background:radial-gradient(70% 60% at 0% 0%, #1b130c, #0b0906 60%)}
+            .app{flex-direction:row}
+            .topbar{display:none}
+            .tabbar{display:none}
+
+            .sidebar{display:flex;flex-direction:column;width:252px;flex-shrink:0;height:100vh;
+                position:sticky;top:0;border-right:1px solid var(--line);padding:28px 18px;background:rgba(32,24,16,.35)}
+            .s-logo{display:flex;align-items:center;gap:11px;padding:0 8px 26px}
+            .s-logo .s-ico{width:38px;height:38px;display:grid;place-items:center;color:var(--brass);
+                border:1px solid var(--line-strong);border-radius:11px}
+            .s-logo .s-ico svg{width:21px;height:21px}
+            .s-logo b{font-family:var(--font-d);font-weight:600;font-size:22px;color:var(--cream)}
+            .s-nav{display:flex;flex-direction:column;gap:3px}
+            .s-nav a{display:flex;align-items:center;gap:12px;padding:12px 13px;border-radius:11px;
+                color:var(--muted);font-size:14.5px;font-weight:500;cursor:pointer;text-decoration:none}
+            .s-nav a svg{width:20px;height:20px}
+            .s-nav a.on{background:var(--surface-2);color:var(--brass)}
+            .s-nav a:not(.on):hover{color:var(--cream)}
+            .s-foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line)}
+            .s-user{display:flex;align-items:center;gap:11px;padding:4px 8px 14px}
+            .s-ava{width:38px;height:38px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line-strong);
+                display:grid;place-items:center;font-family:var(--font-d);font-weight:600;font-size:15px;color:var(--brass);flex-shrink:0}
+            .s-un{font-weight:600;font-size:14px;color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            .s-exit{display:flex;align-items:center;gap:9px;width:100%;background:none;border:none;color:var(--clay);
+                font-family:inherit;font-size:14px;font-weight:600;padding:11px 8px;cursor:pointer;border-radius:9px}
+            .s-exit svg{width:18px;height:18px}
+            .s-exit:hover{background:rgba(189,97,69,.08)}
+
+            .main{flex:1;display:flex;justify-content:center}
+            .content{width:100%;max-width:720px;padding:46px 48px 60px}
+            .exit{display:none}
+
+            .head h1{font-size:33px}
+            .debt{padding:16px 2px}
+        }
+    </style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="razor" viewBox="0 0 24 24"><path d="M4 14 14 4a2.8 2.8 0 0 1 4 4L8 18H4z"/><path d="M4 18v2h16"/><path d="m11 7 3 3"/></symbol>
+    <symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></symbol>
+    <symbol id="wallet" viewBox="0 0 24 24"><path d="M3 7.5A2 2 0 0 1 5 5.5h13v3"/><path d="M3 7.5v9A2 2 0 0 0 5 18.5h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1H5"/><path d="M16.5 13.5a1 1 0 1 0 0 .01"/></symbol>
+    <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.3"/><path d="M3.5 20v-1a5 5 0 0 1 5-5h1a5 5 0 0 1 5 5v1"/><path d="M16 5a3.3 3.3 0 0 1 0 6.4M20.5 20v-1a5 5 0 0 0-3-4.5"/></symbol>
+    <symbol id="gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v2.5M12 19v2.5M21.5 12H19M5 12H2.5M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8M18.7 18.7l-1.8-1.8M7.1 7.1 5.3 5.3"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+</svg>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="s-logo">
+            <div class="s-ico"><svg class="i"><use href="#razor"/></svg></div>
+            <b>Navalha</b>
+        </div>
+        <nav class="s-nav">
+            <a th:href="@{/painel}"><svg class="i"><use href="#cal"/></svg>Agenda</a>
+            <a class="on" th:href="@{/painel/caixa}"><svg class="i"><use href="#wallet"/></svg>Caixa</a>
+            <a th:href="@{/painel/clientes}"><svg class="i"><use href="#users"/></svg>Clientes</a>
+            <a><svg class="i"><use href="#gear"/></svg>Ajustes</a>
+        </nav>
+        <div class="s-foot">
+            <div class="s-user">
+                <div class="s-ava" th:text="${#strings.toUpperCase(#strings.substring(barbearia.name,0,1))}">B</div>
+                <div class="s-un" th:text="${barbearia.name}">Barbearia</div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button class="s-exit" type="submit"><svg class="i"><use href="#logout"/></svg>Sair da conta</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+
+        <div class="topbar">
+            <div class="logo">
+                <div class="nav-ico"><svg class="i"><use href="#razor"/></svg></div>
+                <b>Navalha</b>
+            </div>
+            <div class="me" th:text="${#strings.toUpperCase(#strings.substring(barbearia.name,0,1))}">B</div>
+        </div>
+
+        <div class="content">
+            <div class="head">
+                <a class="back" th:href="@{/painel/caixa}">← Caixa</a>
+                <h1>Clientes devendo</h1>
+            </div>
+
+            <div class="hero">
+                <div class="cap">Total no fiado</div>
+                <div class="amount">
+                    <span class="cur">R$</span><span th:text="${#numbers.formatDecimal(totalFiado, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                </div>
+            </div>
+
+            <div class="sec"><h2>Quem está devendo</h2></div>
+
+            <div th:if="${!fiados.isEmpty()}">
+                <div class="debt" th:each="f : ${fiados}">
+                    <div class="ava" th:text="${#strings.toUpperCase(#strings.substring(f.client.name,0,1))}">C</div>
+                    <div class="debt-main">
+                        <div class="dn" th:text="${f.client.name}">Cliente</div>
+                        <div class="dw">
+                            <span th:text="${f.service.name}">Serviço</span>
+                            · <span th:text="${#temporals.format(f.dateTime, 'dd/MM/yyyy')}">data</span>
+                        </div>
+                    </div>
+                    <div class="debt-right">
+                        <div class="da" th:text="'R$ ' + ${#numbers.formatDecimal(f.value, 1, 'POINT', 2, 'COMMA')}">R$ 0</div>
+                        <form th:action="@{/painel/fiado/{id}/quitar(id=${f.id})}" method="post" style="margin:0">
+                            <button type="submit" class="pay">Marcar pago</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note" th:if="${fiados.isEmpty()}">
+                <svg class="i"><use href="#wallet"/></svg>
+                <div>Ninguém no fiado por aqui. 🎉 Quando um atendimento for marcado como fiado, ele aparece nesta lista.</div>
+            </div>
+
+            <form th:action="@{/logout}" method="post">
+                <button class="exit" type="submit">Sair da conta</button>
+            </form>
+        </div>
+    </main>
+
+    <nav class="tabbar">
+        <a th:href="@{/painel}"><svg class="i"><use href="#cal"/></svg>Agenda</a>
+        <a class="on" th:href="@{/painel/caixa}"><svg class="i"><use href="#wallet"/></svg>Caixa</a>
+        <a class="fab"><svg class="i"><use href="#plus"/></svg></a>
+        <a th:href="@{/painel/clientes}"><svg class="i"><use href="#users"/></svg>Clientes</a>
+        <a><svg class="i"><use href="#gear"/></svg>Ajustes</a>
+    </nav>
+
+</div>
+
+</body>
+</html>

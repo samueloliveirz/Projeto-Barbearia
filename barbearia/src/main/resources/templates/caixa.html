@@ -60,7 +60,7 @@
 
         .link-row{display:flex;align-items:center;justify-content:space-between;width:100%;
             background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
-            color:var(--cream);text-decoration:none;font-weight:500;font-size:14.5px}
+            color:var(--cream);text-decoration:none;font-weight:500;font-size:14.5px;margin-bottom:8px}
         .link-row:hover{border-color:var(--line-strong)}
         .link-row .arw{color:var(--brass);font-size:17px}
         .exit{width:100%;margin-top:24px;background:none;border:1px solid var(--line);color:var(--clay);
@@ -209,6 +209,9 @@
             <div class="sec"><h2>Gerenciar</h2></div>
             <a class="link-row" th:href="@{/painel/contas}">
                 <span>Contas a pagar</span><span class="arw">→</span>
+            </a>
+            <a class="link-row" th:href="@{/painel/fiado}">
+                <span>Clientes devendo (fiado)</span><span class="arw">→</span>
             </a>
 
             <form th:action="@{/logout}" method="post">
