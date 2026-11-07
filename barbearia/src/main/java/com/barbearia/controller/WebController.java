@@ -5,6 +5,7 @@ import com.barbearia.model.Barbershop;
 import com.barbearia.model.Client;
 import com.barbearia.repository.AppointmentRepository;
 import com.barbearia.repository.ClientRepository;
+import com.barbearia.service.FinanceService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,11 +22,14 @@ public class WebController {
 
     private final AppointmentRepository appointmentRepository;
     private final ClientRepository clientRepository;
+    private final FinanceService financeService;
 
     public WebController(AppointmentRepository appointmentRepository,
-                         ClientRepository clientRepository) {
+                         ClientRepository clientRepository,
+                         FinanceService financeService) {
         this.appointmentRepository = appointmentRepository;
         this.clientRepository = clientRepository;
+        this.financeService = financeService;
     }
 
     @GetMapping("/login")
@@ -68,6 +72,22 @@ public class WebController {
         model.addAttribute("barbearia", barbearia);
         model.addAttribute("clientes", lista);
         return "clientes";
+    }
+
+    @GetMapping("/painel/caixa")
+    public String caixa(@AuthenticationPrincipal Barbershop barbearia, Model model) {
+        LocalDate hoje = LocalDate.now();
+        Long id = barbearia.getId();
+
+        model.addAttribute("barbearia", barbearia);
+        model.addAttribute("faturadoHoje", financeService.dailyRevenue(hoje, id));
+        model.addAttribute("recebidoHoje", financeService.dailyReceived(hoje, id));
+        model.addAttribute("fiadoTotal", financeService.totalOwed(id));
+        model.addAttribute("despesasMes", financeService.monthlyExpenses(hoje.getMonthValue(), hoje.getYear(), id));
+        model.addAttribute("lucroMes", financeService.monthlyProfit(hoje.getMonthValue(), hoje.getYear(), id));
+        model.addAttribute("ticketMedio", financeService.dailyAverageTicket(hoje, id));
+        model.addAttribute("clientesHoje", financeService.dailyClientCount(hoje, id));
+        return "caixa";
     }
 
     public record ClienteView(String nome, String telefone, int cortes, BigDecimal gasto) {}

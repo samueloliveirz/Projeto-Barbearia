@@ -146,7 +146,7 @@
     </div>
     <nav class="s-nav">
       <a class="on" th:href="@{/painel}"><svg class="i"><use href="#cal"/></svg>Agenda</a>
-      <a><svg class="i"><use href="#wallet"/></svg>Caixa</a>
+      <a th:href="@{/painel/caixa}"><svg class="i"><use href="#wallet"/></svg>Caixa</a>
       <a th:href="@{/painel/clientes}"><svg class="i"><use href="#users"/></svg>Clientes</a>
       <a><svg class="i"><use href="#gear"/></svg>Ajustes</a>
     </nav>
@@ -218,7 +218,7 @@
   <!-- ===== TABBAR (mobile) ===== -->
   <nav class="tabbar">
     <a class="on" th:href="@{/painel}"><svg class="i"><use href="#cal"/></svg>Agenda</a>
-    <a><svg class="i"><use href="#wallet"/></svg>Caixa</a>
+    <a th:href="@{/painel/caixa}"><svg class="i"><use href="#wallet"/></svg>Caixa</a>
     <a class="fab"><svg class="i"><use href="#plus"/></svg></a>
     <a th:href="@{/painel/clientes}"><svg class="i"><use href="#users"/></svg>Clientes</a>
     <a><svg class="i"><use href="#gear"/></svg>Ajustes</a>
