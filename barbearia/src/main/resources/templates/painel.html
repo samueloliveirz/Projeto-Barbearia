@@ -39,6 +39,13 @@
     .head .eyebrow{font-size:13px;color:var(--muted);margin-bottom:3px}
     .head h1{font-family:var(--font-d);font-weight:600;font-size:27px;line-height:1.1;color:var(--cream)}
     .head h1 em{font-style:italic;color:var(--brass)}
+    .btn-novo{display:inline-block;margin-top:14px;background:var(--brass);color:#1c1509;text-decoration:none;
+      font-weight:600;font-size:14px;padding:11px 18px;border-radius:11px}
+    .datenav{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+    .datenav a{color:var(--brass);text-decoration:none;font-size:18px;line-height:1;width:30px;height:30px;
+      display:grid;place-items:center;border:1px solid var(--line);border-radius:9px}
+    .datenav a:hover{border-color:var(--line-strong)}
+    .datenav span{font-size:13.5px;color:var(--muted);font-weight:500;min-width:92px;text-align:center}
 
     .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px}
     .stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 17px}
@@ -148,7 +155,7 @@
       <a class="on" th:href="@{/painel}"><svg class="i"><use href="#cal"/></svg>Agenda</a>
       <a th:href="@{/painel/caixa}"><svg class="i"><use href="#wallet"/></svg>Caixa</a>
       <a th:href="@{/painel/clientes}"><svg class="i"><use href="#users"/></svg>Clientes</a>
-      <a><svg class="i"><use href="#gear"/></svg>Ajustes</a>
+      <a th:href="@{/painel/ajustes}"><svg class="i"><use href="#gear"/></svg>Ajustes</a>
     </nav>
     <div class="s-foot">
       <div class="s-user">
@@ -175,8 +182,14 @@
 
     <div class="content">
       <div class="head">
-        <div class="eyebrow" th:text="${#temporals.format(hoje, 'dd/MM/yyyy')}">hoje</div>
-        <h1>Olá, <em th:text="${barbearia.name}">Barbearia</em></h1>
+        <div class="datenav">
+          <a th:href="@{/painel(dia=${diaAnterior})}">‹</a>
+          <span th:text="${#temporals.format(hoje, 'dd/MM/yyyy')}">data</span>
+          <a th:href="@{/painel(dia=${diaSeguinte})}">›</a>
+        </div>
+        <h1 th:if="${ehHoje}">Olá, <em th:text="${barbearia.name}">Barbearia</em></h1>
+        <h1 th:unless="${ehHoje}">Agenda do dia</h1>
+        <a class="btn-novo" th:href="@{/painel/agendamento/novo}">+ Novo agendamento</a>
       </div>
 
       <div class="stats">
@@ -219,9 +232,9 @@
   <nav class="tabbar">
     <a class="on" th:href="@{/painel}"><svg class="i"><use href="#cal"/></svg>Agenda</a>
     <a th:href="@{/painel/caixa}"><svg class="i"><use href="#wallet"/></svg>Caixa</a>
-    <a class="fab"><svg class="i"><use href="#plus"/></svg></a>
+    <a class="fab" th:href="@{/painel/agendamento/novo}"><svg class="i"><use href="#plus"/></svg></a>
     <a th:href="@{/painel/clientes}"><svg class="i"><use href="#users"/></svg>Clientes</a>
-    <a><svg class="i"><use href="#gear"/></svg>Ajustes</a>
+    <a th:href="@{/painel/ajustes}"><svg class="i"><use href="#gear"/></svg>Ajustes</a>
   </nav>
 
 </div>

@@ -1,6 +1,8 @@
 package com.barbearia.controller;
 
+import com.barbearia.dto.AppointmentRequestDTO;
 import com.barbearia.dto.PayableDTO;
+import com.barbearia.dto.ServiceDTO;
 import com.barbearia.enums.AccountStatus;
 import com.barbearia.enums.PaymentStatus;
 import com.barbearia.model.Appointment;
@@ -8,8 +10,13 @@ import com.barbearia.model.Barbershop;
 import com.barbearia.model.Client;
 import com.barbearia.repository.AppointmentRepository;
 import com.barbearia.repository.ClientRepository;
+import com.barbearia.service.AppointmentService;
+import com.barbearia.service.BarberService;
 import com.barbearia.service.FinanceService;
 import com.barbearia.service.PayableService;
+import com.barbearia.service.ServiceService;
+import com.barbearia.service.exceptions.HorarioIndisponivelException;
+import com.barbearia.service.exceptions.PlanLimitException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -32,15 +39,24 @@ public class WebController {
     private final ClientRepository clientRepository;
     private final FinanceService financeService;
     private final PayableService payableService;
+    private final ServiceService serviceService;
+    private final BarberService barberService;
+    private final AppointmentService appointmentService;
 
     public WebController(AppointmentRepository appointmentRepository,
                          ClientRepository clientRepository,
                          FinanceService financeService,
-                         PayableService payableService) {
+                         PayableService payableService,
+                         ServiceService serviceService,
+                         BarberService barberService,
+                         AppointmentService appointmentService) {
         this.appointmentRepository = appointmentRepository;
         this.clientRepository = clientRepository;
         this.financeService = financeService;
         this.payableService = payableService;
+        this.serviceService = serviceService;
+        this.barberService = barberService;
+        this.appointmentService = appointmentService;
     }
 
     @GetMapping("/login")
@@ -49,10 +65,13 @@ public class WebController {
     }
 
     @GetMapping("/painel")
-    public String painel(@AuthenticationPrincipal Barbershop barbearia, Model model) {
-        LocalDate hoje = LocalDate.now();
-        LocalDateTime inicio = hoje.atStartOfDay();
-        LocalDateTime fim = hoje.atTime(LocalTime.MAX);
+    public String painel(@AuthenticationPrincipal Barbershop barbearia,
+                         @RequestParam(required = false)
+                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dia,
+                         Model model) {
+        LocalDate data = (dia != null) ? dia : LocalDate.now();
+        LocalDateTime inicio = data.atStartOfDay();
+        LocalDateTime fim = data.atTime(LocalTime.MAX);
 
         List<Appointment> agendamentos =
                 appointmentRepository.findByDateTimeBetweenAndBarbershopId(inicio, fim, barbearia.getId());
@@ -62,7 +81,10 @@ public class WebController {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         model.addAttribute("barbearia", barbearia);
-        model.addAttribute("hoje", hoje);
+        model.addAttribute("hoje", data);
+        model.addAttribute("diaAnterior", data.minusDays(1));
+        model.addAttribute("diaSeguinte", data.plusDays(1));
+        model.addAttribute("ehHoje", data.equals(LocalDate.now()));
         model.addAttribute("agendamentos", agendamentos);
         model.addAttribute("totalDoDia", totalDoDia);
         return "painel";
@@ -150,6 +172,69 @@ public class WebController {
                     appointmentRepository.save(a);
                 });
         return "redirect:/painel/fiado";
+    }
+
+    @GetMapping("/painel/ajustes")
+    public String ajustes(@AuthenticationPrincipal Barbershop barbearia, Model model) {
+        model.addAttribute("barbearia", barbearia);
+        model.addAttribute("servicos", serviceService.findAll(barbearia.getId()));
+        model.addAttribute("barbeiros", barberService.findAll(barbearia.getId()));
+        return "ajustes";
+    }
+
+    @PostMapping("/painel/ajustes/servico")
+    public String novoServico(@AuthenticationPrincipal Barbershop barbearia,
+                              @RequestParam String name,
+                              @RequestParam BigDecimal price,
+                              @RequestParam Integer durationMinutes) {
+        serviceService.insert(new ServiceDTO(null, name, price, durationMinutes), barbearia.getId());
+        return "redirect:/painel/ajustes";
+    }
+
+    @PostMapping("/painel/ajustes/servico/{id}/remover")
+    public String removerServico(@PathVariable Long id, @AuthenticationPrincipal Barbershop barbearia) {
+        serviceService.delete(id, barbearia.getId());
+        return "redirect:/painel/ajustes";
+    }
+
+    @PostMapping("/painel/ajustes/barbeiro")
+    public String novoBarbeiro(@AuthenticationPrincipal Barbershop barbearia, @RequestParam String name) {
+        try {
+            barberService.insert(name, barbearia.getId());
+        } catch (PlanLimitException e) {
+            return "redirect:/painel/ajustes?erroBarbeiro";
+        }
+        return "redirect:/painel/ajustes";
+    }
+
+    @PostMapping("/painel/ajustes/barbeiro/{id}/remover")
+    public String removerBarbeiro(@PathVariable Long id, @AuthenticationPrincipal Barbershop barbearia) {
+        barberService.delete(id, barbearia.getId());
+        return "redirect:/painel/ajustes";
+    }
+
+    @GetMapping("/painel/agendamento/novo")
+    public String novoAgendamento(@AuthenticationPrincipal Barbershop barbearia, Model model) {
+        model.addAttribute("barbearia", barbearia);
+        model.addAttribute("servicos", serviceService.findAll(barbearia.getId()));
+        model.addAttribute("barbeiros", barberService.findAll(barbearia.getId()));
+        return "agendamento";
+    }
+
+    @PostMapping("/painel/agendamento/novo")
+    public String criarAgendamento(@AuthenticationPrincipal Barbershop barbearia,
+                                   @RequestParam String clientName,
+                                   @RequestParam String phone,
+                                   @RequestParam Long serviceId,
+                                   @RequestParam Long barberId,
+                                   @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime dateTime) {
+        try {
+            appointmentService.insert(
+                    new AppointmentRequestDTO(clientName, phone, serviceId, barberId, dateTime), barbearia.getId());
+        } catch (HorarioIndisponivelException e) {
+            return "redirect:/painel/agendamento/novo?ocupado";
+        }
+        return "redirect:/painel";
     }
 
     public record ClienteView(String nome, String telefone, int cortes, BigDecimal gasto) {}

@@ -3,29 +3,28 @@ spring:
     name: barbearia
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/navalha
-    username: navalha
-    password: navalha123
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/navalha}
+    username: ${SPRING_DATASOURCE_USERNAME:navalha}
+    password: ${SPRING_DATASOURCE_PASSWORD:navalha123}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 jwt:
-  secret: minhaChaveSecretaSuperSeguraComPeloMenos32Caracteres123
+  secret: ${JWT_SECRET:chave-de-desenvolvimento-local-nao-usar-em-producao-123}
   expiration: 86400000
 
 whatsapp:
-  verify-token: navalha_verifica_2026
-  phone-number-id: 1464074893452109
-  access-token: ${WHATSAPP_ACCESS_TOKEN}
-  api-version: v25.0
+  verify-token: ${WHATSAPP_VERIFY_TOKEN:navalha_verifica_2026}
+  phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:1464074893452109}
+  access-token: ${WHATSAPP_ACCESS_TOKEN:}
+  api-version: ${WHATSAPP_API_VERSION:v25.0}

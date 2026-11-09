@@ -131,16 +131,13 @@
             <a th:href="@{/painel}"><svg class="i"><use href="#cal"/></svg>Agenda</a>
             <a th:href="@{/painel/caixa}"><svg class="i"><use href="#wallet"/></svg>Caixa</a>
             <a class="on" th:href="@{/painel/clientes}"><svg class="i"><use href="#users"/></svg>Clientes</a>
-            <a><svg class="i"><use href="#gear"/></svg>Ajustes</a>
+            <a th:href="@{/painel/ajustes}"><svg class="i"><use href="#gear"/></svg>Ajustes</a>
         </nav>
         <div class="s-foot">
             <div class="s-user">
                 <div class="s-ava" th:text="${#strings.toUpperCase(#strings.substring(barbearia.name,0,1))}">B</div>
                 <div class="s-un" th:text="${barbearia.name}">Barbearia</div>
             </div>
-            <form th:action="@{/logout}" method="post">
-                <button class="s-exit" type="submit"><svg class="i"><use href="#logout"/></svg>Sair da conta</button>
-            </form>
         </div>
     </aside>
 
@@ -180,9 +177,6 @@
                 <div>Nenhum cliente ainda. Eles entram sozinhos quando marcam um horário pelo WhatsApp.</div>
             </div>
 
-            <form th:action="@{/logout}" method="post">
-                <button class="exit" type="submit">Sair da conta</button>
-            </form>
         </div>
     </main>
 
@@ -192,7 +186,7 @@
         <a th:href="@{/painel/caixa}"><svg class="i"><use href="#wallet"/></svg>Caixa</a>
         <a class="fab"><svg class="i"><use href="#plus"/></svg></a>
         <a class="on" th:href="@{/painel/clientes}"><svg class="i"><use href="#users"/></svg>Clientes</a>
-        <a><svg class="i"><use href="#gear"/></svg>Ajustes</a>
+        <a th:href="@{/painel/ajustes}"><svg class="i"><use href="#gear"/></svg>Ajustes</a>
     </nav>
 
 </div>
