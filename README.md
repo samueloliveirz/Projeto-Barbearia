@@ -17,9 +17,13 @@ Sistema completo de gestão para barbearias: agendamento pelo WhatsApp, painel w
 |---|---|
 | ![Painel](docs/painel.png) | ![Caixa](docs/caixa.png) |
 
-| Agendamento pelo WhatsApp | Clientes |
+| Agendamento pelo WhatsApp | Validação e confirmação |
 |---|---|
-| ![WhatsApp](docs/whatsapp.png) | ![Clientes](docs/clientes.png) |
+| ![WhatsApp - início da conversa](docs/whatsapp-inicio.png) | ![WhatsApp - confirmação](docs/whatsapp-confirmacao.png) |
+
+| Clientes |
+|---|
+| ![Clientes](docs/clientes.png) |
 
 ---
 
