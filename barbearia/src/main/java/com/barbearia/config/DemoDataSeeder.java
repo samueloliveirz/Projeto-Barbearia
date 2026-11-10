@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -29,6 +30,7 @@ import java.util.List;
 /**
  * Mantém a barbearia de demonstração sempre pronta pra quem abrir o link.
  * A agenda é recriada quando o dia vira, pra vitrine nunca aparecer vazia.
+ * Mantém três semanas de histórico pra navegação por data e indicadores do mês.
  */
 @Component
 public class DemoDataSeeder implements CommandLineRunner {
@@ -70,13 +72,23 @@ public class DemoDataSeeder implements CommandLineRunner {
         }
 
         LocalDate hoje = LocalDate.now();
-        boolean jaTemAgendaHoje = !appointmentRepository
-                .findByDateTimeBetweenAndBarbershopId(
-                        hoje.atStartOfDay(), hoje.atTime(LocalTime.MAX), demo.getId())
-                .isEmpty();
 
-        if (!jaTemAgendaHoje) {
-            criarAgendaDoDia(demo, hoje);
+        // Três semanas de histórico: dá conteúdo pra navegação por data e faz o
+        // lucro do mês bater com despesas que são do mês inteiro.
+        for (int i = 20; i >= 0; i--) {
+            LocalDate dia = hoje.minusDays(i);
+            if (dia.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                continue;
+            }
+
+            boolean jaTemAgenda = !appointmentRepository
+                    .findByDateTimeBetweenAndBarbershopId(
+                            dia.atStartOfDay(), dia.atTime(LocalTime.MAX), demo.getId())
+                    .isEmpty();
+
+            if (!jaTemAgenda) {
+                criarAgendaDoDia(demo, dia);
+            }
         }
 
         System.out.println("Conta demo pronta: " + DEMO_EMAIL + " / " + DEMO_SENHA);
@@ -122,12 +134,17 @@ public class DemoDataSeeder implements CommandLineRunner {
                 dia.atTime(9, 0), AppointmentStatus.CONCLUIDO, PaymentStatus.PAGO);
         agendar(shop, pedro, corte, "Rafa do Posto", "11990002222",
                 dia.atTime(10, 30), AppointmentStatus.CONCLUIDO, PaymentStatus.PAGO);
+        // Dia passado já foi atendido e acertado; só o dia de hoje deixa fiado em aberto.
+        boolean passado = dia.isBefore(LocalDate.now());
+        AppointmentStatus statusTarde = passado ? AppointmentStatus.CONCLUIDO : AppointmentStatus.CONFIRMADO;
+        PaymentStatus pagamentoTarde = passado ? PaymentStatus.PAGO : PaymentStatus.FIADO;
+
         agendar(shop, joao, barba, "Pedro Bigode", "11990003333",
-                dia.atTime(14, 0), AppointmentStatus.CONFIRMADO, PaymentStatus.PAGO);
+                dia.atTime(14, 0), statusTarde, PaymentStatus.PAGO);
         agendar(shop, pedro, corte, "Léo Primo", "11990004444",
-                dia.atTime(15, 30), AppointmentStatus.CONFIRMADO, PaymentStatus.FIADO);
+                dia.atTime(15, 30), statusTarde, pagamentoTarde);
         agendar(shop, joao, corteBarba, "Diego Tatuador", "11990005555",
-                dia.atTime(17, 0), AppointmentStatus.CONFIRMADO, PaymentStatus.FIADO);
+                dia.atTime(17, 0), statusTarde, pagamentoTarde);
     }
 
     private void agendar(Barbershop shop, Barber barber, Service service,

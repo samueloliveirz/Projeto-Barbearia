@@ -1,139 +1,175 @@
 # 💈 Navalha — SaaS de Gestão para Barbearias
 
-API REST para gestão de barbearias: agendamentos, clientes, serviços, barbeiros e controle financeiro. Cada barbearia é um cliente do sistema (multi-tenant), com planos de assinatura.
+Sistema completo de gestão para barbearias: agendamento pelo WhatsApp, painel web, controle de caixa, fiado e contas a pagar. Cada barbearia é um cliente isolado do sistema (multi-tenant), com planos de assinatura.
 
-> ⚠️ **Projeto em desenvolvimento.** Backend em andamento; autenticação e integrações ainda não implementadas (ver [Roadmap](#-roadmap)).
+**[🔗 Acessar a demonstração](https://projeto-barbearia-f330.onrender.com)**
 
----
-
-## 🛠️ Tecnologias
-
-- **Java 21**
-- **Spring Boot 4.1.0** (Web MVC, Data JPA, Validation)
-- **PostgreSQL**
-- **Lombok**
-- **Maven** (com wrapper `mvnw`)
+> **Conta de demonstração:** `demo@navalha.com` / `demo123`
+> (ou clique em **"Entrar com a conta demo"** direto na tela de login)
+>
+> A demo roda no plano gratuito do Render — a primeira abertura pode levar ~40s enquanto o servidor acorda.
 
 ---
 
-## ✅ Funcionalidades implementadas
+## 📸 Telas
 
-- **Barbeiros** — CRUD completo
-- **Clientes** — CRUD completo
-- **Serviços** — CRUD (nome, preço, duração)
-- **Agendamentos** — CRUD, com status e status de pagamento
-- **Transações** — registro de entradas/saídas, consulta por data e por período
-- **Contas a pagar** — CRUD + marcação de pagamento
-- **Financeiro** — indicadores: faturamento, recebido, fiado, a receber, ticket médio, nº de clientes, despesas e lucro
-- Tratamento centralizado de exceções (recurso não encontrado, telefone duplicado, horário indisponível, limite do plano)
+| Painel do dia | Caixa |
+|---|---|
+| ![Painel](docs/painel.png) | ![Caixa](docs/caixa.png) |
 
----
-
-## 📦 Modelo de domínio
-
-| Entidade      | Campos principais                                                      | Relações                          |
-|---------------|------------------------------------------------------------------------|-----------------------------------|
-| `Barbershop`  | name, email, password, plan                                            | tem vários `Barber`               |
-| `Barber`      | name                                                                    | pertence a `Barbershop`; tem `Appointment` |
-| `Client`      | name, phone                                                            | pertence a `Barbershop`           |
-| `Service`     | name, price, durationMinutes                                          | pertence a `Barbershop`           |
-| `Appointment` | dateTime, status, paymentStatus, value                                | liga `Client`, `Barber`, `Service` |
-| `Transaction` | type, amount, date, description                                       | pertence a `Barbershop`           |
-| `Payable`     | description, amount, dueDate, status                                  | pertence a `Barbershop`           |
-
-### Enums
-
-- **Plan:** `BASICO`, `PRO`
-- **AppointmentStatus:** `AGUARDANDO`, `CONFIRMADO`, `CONCLUIDO`, `CANCELADO`
-- **PaymentStatus:** `PAGO`, `FIADO`
-- **TransactionType:** `ENTRADA`, `SAIDA`
-- **AccountStatus** (contas a pagar): `PENDENTE`, `PAGO`, `VENCIDO`
+| Clientes |
+|---|
+| ![Clientes](docs/clientes.png) |
 
 ---
 
-## 🔌 Endpoints
+## 🎯 O problema
 
-| Recurso        | Método & rota                                                                 |
-|----------------|-------------------------------------------------------------------------------|
-| Barbeiros      | `GET /barbers` · `GET /barbers/{id}` · `POST /barbers` · `PUT /barbers/{id}` · `DELETE /barbers/{id}` |
-| Clientes       | `GET /clients` · `GET /clients/{id}` · `POST /clients` · `PUT /clients/{id}` · `DELETE /clients/{id}` |
-| Serviços       | `GET /services` · `GET /services/{id}` · `POST /services` · `PUT /services/{id}` · `DELETE /services/{id}` |
-| Agendamentos   | `GET /appointments` · `GET /appointments/{id}` · `POST /appointments` · `PUT /appointments/{id}` · `DELETE /appointments/{id}` |
-| Transações     | `GET /transactions` · `GET /transactions/{id}` · `GET /transactions/by-date` · `GET /transactions/by-period` · `POST /transactions` · `DELETE /transactions/{id}` |
-| Contas a pagar | `GET /payables` · `GET /payables/{id}` · `POST /payables` · `PATCH /payables/{id}/pay` · `DELETE /payables/{id}` |
-| Financeiro     | `GET /finance/revenue` · `/received` · `/credit` · `/owed` · `/average-ticket` · `/clients` · `/expenses` · `/profit` |
+Barbearia de bairro perde agendamento porque o barbeiro está cortando e não consegue responder o WhatsApp. E no fim do mês não sabe quanto entrou, quanto é fiado e quanto tem a pagar — está tudo num caderno.
+
+O Navalha resolve os dois: **o cliente agenda sozinho pelo WhatsApp** (o bot responde 24h) e **o barbeiro vê tudo num painel** pelo celular.
 
 ---
 
-## 🚀 Como rodar localmente
+## 🛠️ Stack
 
-### Pré-requisitos
-- Java 21
-- PostgreSQL rodando
+**Backend:** Java 21 · Spring Boot 4.1 · Spring Security 7 · Spring Data JPA · PostgreSQL
+**Frontend:** Thymeleaf · HTML/CSS (responsivo, mobile-first)
+**Integrações:** Twilio WhatsApp API
+**Infra:** Docker (multi-stage) · Render · Neon (Postgres serverless)
+**Docs:** OpenAPI / Swagger UI
 
-### 1. Banco de dados
-Crie um banco PostgreSQL. Config padrão esperada:
+---
 
-| Campo    | Valor      |
-|----------|------------|
-| Host     | localhost  |
-| Porta    | 5433       |
-| Database | navalha    |
-| Usuário  | navalha    |
+## ✅ O que está funcionando
 
-### 2. Criar o `application.yaml`
-> ⚠️ Este arquivo **não está no repositório** (contém a senha do banco) e precisa ser criado na mão em:
-> `barbearia/src/main/resources/application.yaml`
+### Agendamento pelo WhatsApp
+Bot conversacional que atende o cliente do começo ao fim — mostra os serviços, pega o horário, confirma e grava o agendamento no banco. Recebe as mensagens por **webhook** e responde em **TwiML**.
 
-```yaml
-spring:
-  application:
-    name: barbearia
-  datasource:
-    url: jdbc:postgresql://localhost:5433/navalha
-    username: navalha
-    password: SUA_SENHA
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-```
+### Painel web (9 telas)
+- **Login** — entrada com email e senha, ou direto na conta demo
+- **Registro** — cadastro de uma barbearia nova, já escolhendo o plano
+- **Agenda do dia** — navegação por data, status de cada agendamento
+- **Novo agendamento** — criação manual pelo painel
+- **Clientes** — histórico de cortes e quanto cada um já gastou
+- **Caixa** — faturamento, recebido, ticket médio, nº de clientes
+- **Fiado** — quem está devendo e quitação com 1 clique
+- **Contas a pagar** — cadastro, vencimento e baixa
+- **Ajustes** — CRUD de serviços e barbeiros
 
-### 3. Rodar
+### Regras de negócio
+- **Multi-tenancy** — cada barbearia só enxerga os próprios dados
+- **Limite por plano** — plano `BASICO` permite 1 barbeiro; `PRO` é ilimitado
+- **Choque de horário** — bloqueia agendamento em horário já ocupado
+- **Fiado** — agendamento pode fechar como `PAGO` ou `FIADO`, e o fiado entra no "a receber"
+- **Indicadores financeiros** — faturamento do dia, recebido, fiado, despesas do mês e lucro
+
+---
+
+## 🧠 Decisões técnicas
+
+### Duas cadeias de segurança no mesmo app
+O sistema atende dois tipos de cliente ao mesmo tempo, e cada um autentica de um jeito:
+
+| | Telas (Thymeleaf) | API REST |
+|---|---|---|
+| **Quem usa** | barbeiro no navegador | bot do WhatsApp, Postman, futuro frontend |
+| **Autenticação** | sessão + cookie | JWT no header |
+| **Estado** | com sessão | `STATELESS` |
+
+Resolvido com dois `SecurityFilterChain` separados por `@Order` + `securityMatcher`: o primeiro cuida de `/` e `/painel/**` com form login, o segundo cuida do resto com o filtro JWT. Assim o bot não precisa de cookie e a tela não precisa de token.
+
+### Isolamento dos dados
+Toda consulta é filtrada pela barbearia logada, que vem da sessão via `@AuthenticationPrincipal`. Nenhum endpoint aceita o `barbershopId` vindo do client — se aceitasse, bastaria trocar o número na URL pra ver os dados de outra barbearia.
+
+### Deploy
+`Dockerfile` multi-stage: um estágio com Maven pra compilar, outro só com o JRE pra rodar — a imagem final não carrega o Maven nem o código-fonte. Toda configuração sensível (banco, JWT, token do WhatsApp) vem de variável de ambiente, com valor padrão só pro ambiente local.
+
+### Tratamento de erros
+Exceções de domínio próprias (`ResourceNotFoundException`, `BusinessException`, `EmailAlreadyExistsException`) capturadas num `@RestControllerAdvice`, devolvendo resposta padronizada em vez de stack trace.
+
+---
+
+## 🗂️ Modelo de domínio
+
+| Entidade | Papel |
+|---|---|
+| `Barbershop` | o tenant — dono da conta, tem plano |
+| `Barber` | barbeiro da barbearia |
+| `Client` | cliente final, identificado pelo telefone |
+| `Service` | serviço oferecido (nome, preço, duração) |
+| `Appointment` | agendamento — liga cliente, barbeiro e serviço |
+| `Transaction` | entrada/saída do caixa |
+| `Payable` | conta a pagar |
+
+**Enums:** `Plan` (BASICO, PRO) · `AppointmentStatus` (AGUARDANDO, CONFIRMADO, CONCLUIDO, CANCELADO) · `PaymentStatus` (PAGO, FIADO) · `AccountStatus` (PENDENTE, PAGO, VENCIDO) · `TransactionType` (ENTRADA, SAIDA)
+
+---
+
+## 🚀 Rodando local
+
+**Pré-requisitos:** Java 21, Docker
+
 ```bash
-cd barbearia
+git clone https://github.com/samueloliveirz/projeto-barbearia.git
+cd projeto-barbearia/barbearia
+
+# sobe o Postgres
+docker compose up -d
+
+# roda a aplicação
 ./mvnw spring-boot:run
 ```
-A API sobe em `http://localhost:8080`.
+
+Abre em `http://localhost:8080` — a aplicação já cria a conta de demonstração com dados na primeira execução.
+
+Documentação da API: `http://localhost:8080/swagger-ui.html`
+
+### Variáveis de ambiente
+
+Todas têm padrão pro ambiente local. Em produção, sobrescreva:
+
+| Variável | Pra quê |
+|---|---|
+| `SPRING_DATASOURCE_URL` | URL do Postgres |
+| `SPRING_DATASOURCE_USERNAME` | usuário do banco |
+| `SPRING_DATASOURCE_PASSWORD` | senha do banco |
+| `JWT_SECRET` | chave de assinatura dos tokens |
+| `WHATSAPP_ACCESS_TOKEN` | token da API do WhatsApp |
 
 ---
 
-## 📁 Estrutura do projeto
+## 📁 Estrutura
 
 ```
 barbearia/
-└── src/main/java/com/barbearia/
-    ├── model/         # entidades JPA
-    ├── enums/         # enums de domínio
-    ├── dto/           # objetos de transferência
-    ├── repository/    # repositórios JPA
-    ├── service/       # regras de negócio
-    │   └── exceptions/
-    └── controller/    # endpoints REST
-        └── exceptions/
+├── Dockerfile
+└── src/main/
+    ├── java/com/barbearia/
+    │   ├── config/       # security, JWT, OpenAPI, seed da demo
+    │   ├── controller/   # REST + telas (WebController) + webhook
+    │   ├── dto/
+    │   ├── enums/
+    │   ├── model/        # entidades JPA
+    │   ├── repository/
+    │   └── service/      # regras de negócio
+    └── resources/
+        └── templates/    # telas Thymeleaf
 ```
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ Próximos passos
 
-- [ ] **Spring Security** — autenticação/autorização (login da barbearia)
-- [ ] **Integração com WhatsApp** — notificações/agendamento
-- [ ] **Chaves do Google** — OAuth / integrações
-- [ ] Frontend (Next.js)
-- [ ] Testes automatizados
-- [ ] Deploy
+- [ ] Testes automatizados (JUnit + Mockito)
+- [ ] Migrar o frontend pra React
+- [ ] Assinatura recorrente com Stripe
+- [ ] Lembrete automático de agendamento pelo WhatsApp
+- [ ] Relatório mensal em PDF
+
+---
+
+## 👤 Autor
+
+**Samuel Oliveira**
+[LinkedIn](https://linkedin.com/in/samueloliveirz) · [GitHub](https://github.com/samueloliveirz)
