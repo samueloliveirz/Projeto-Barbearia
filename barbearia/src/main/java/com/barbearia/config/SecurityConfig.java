@@ -45,9 +45,9 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/login", "/logout", "/painel/**")
+                .securityMatcher("/", "/login", "/logout", "/registro", "/painel/**")
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/", "/login", "/registro").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")

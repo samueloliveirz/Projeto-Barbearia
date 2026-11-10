@@ -37,12 +37,10 @@
         .hero li svg{width:19px;height:19px;color:var(--sage);stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
         /* ---- coluna do formulário ---- */
-        .panel{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
-        @media(min-width:860px){.panel{flex:1}}
+        .panel{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 24px}
         .card{width:100%;max-width:360px}
 
-        /* marca compacta (só no mobile) */
-        .brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:32px}
+        .brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:28px}
         @media(min-width:860px){.brand{display:none}}
         .brand .ico{width:58px;height:58px;display:grid;place-items:center;color:var(--brass);
             border:1px solid var(--line-strong);border-radius:16px;background:var(--surface)}
@@ -50,11 +48,19 @@
         .brand b{font-family:var(--font-d);font-weight:600;font-size:30px;letter-spacing:.3px;color:var(--cream)}
         .brand span{font-size:13.5px;color:var(--muted)}
 
-        /* título do form (só no desktop) */
-        .form-head{display:none;margin-bottom:26px}
+        .form-head{display:none;margin-bottom:22px}
         @media(min-width:860px){.form-head{display:block}}
         .form-head h2{font-family:var(--font-d);font-weight:600;font-size:27px;margin-bottom:4px}
         .form-head span{font-size:14px;color:var(--muted)}
+
+        /* ---- caixa da demo ---- */
+        .demo-box{border:1px dashed var(--brass-dim);background:rgba(205,164,92,.06);
+            border-radius:13px;padding:15px 16px;margin-bottom:22px}
+        .demo-txt{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:11px}
+        .demo-txt b{color:var(--cream)}
+        .demo-btn{width:100%;background:none;border:1px solid var(--brass-dim);color:var(--brass);
+            border-radius:10px;padding:11px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+        .demo-btn:hover{background:rgba(205,164,92,.1)}
 
         form{display:flex;flex-direction:column;gap:13px}
         .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px}
@@ -62,12 +68,16 @@
             padding:14px 15px;color:var(--cream);font-family:inherit;font-size:15px;outline:none;transition:border-color .2s}
         .field input::placeholder{color:var(--muted-2)}
         .field input:focus{border-color:var(--brass-dim)}
-        button{margin-top:8px;background:var(--brass);color:#1c1509;border:none;border-radius:12px;
+        form button[type=submit]{margin-top:8px;background:var(--brass);color:#1c1509;border:none;border-radius:12px;
             padding:15px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:filter .2s}
-        button:hover{filter:brightness(1.06)}
-        .msg{font-size:13px;padding:12px 14px;border-radius:11px;margin-bottom:4px}
+        form button[type=submit]:hover{filter:brightness(1.06)}
+
+        .msg{font-size:13px;padding:12px 14px;border-radius:11px;margin-bottom:6px}
         .msg.err{color:var(--clay);border:1px solid rgba(189,97,69,.4);background:rgba(189,97,69,.08)}
         .msg.ok{color:var(--sage);border:1px solid rgba(122,160,106,.4);background:rgba(122,160,106,.08)}
+
+        .alt{text-align:center;margin-top:20px;font-size:13.5px;color:var(--muted)}
+        .alt a{color:var(--brass);text-decoration:none;font-weight:600}
     </style>
 </head>
 <body>
@@ -103,13 +113,22 @@
                 <span>Acesse o painel da sua barbearia</span>
             </div>
 
+            <div class="demo-box">
+                <div class="demo-txt">
+                    Só quer dar uma olhada? Entre na <b>conta de demonstração</b> — já vem com agenda,
+                    clientes e caixa preenchidos.
+                </div>
+                <button type="button" class="demo-btn" onclick="entrarDemo()">Entrar com a conta demo →</button>
+            </div>
+
             <p class="msg err" th:if="${param.error}">Email ou senha inválidos.</p>
             <p class="msg ok" th:if="${param.logout}">Você saiu da conta.</p>
+            <p class="msg ok" th:if="${param.criado}">Conta criada! Entre com seu email e senha.</p>
 
-            <form th:action="@{/login}" method="post">
+            <form id="loginForm" th:action="@{/login}" method="post">
                 <div class="field">
                     <label>Email</label>
-                    <input type="email" name="username" placeholder="seu@email.com" required autofocus>
+                    <input type="email" name="username" placeholder="seu@email.com" required>
                 </div>
                 <div class="field">
                     <label>Senha</label>
@@ -117,9 +136,22 @@
                 </div>
                 <button type="submit">Entrar</button>
             </form>
+
+            <div class="alt">
+                Não tem conta? <a th:href="@{/registro}">Criar conta</a>
+            </div>
         </div>
     </div>
 
 </div>
+
+<script>
+    function entrarDemo() {
+        var f = document.getElementById('loginForm');
+        f.username.value = 'demo@navalha.com';
+        f.password.value = 'demo123';
+        f.submit();
+    }
+</script>
 </body>
 </html>

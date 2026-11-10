@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navalha — Criar conta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg:#17120e;--surface:#201810;--surface-2:#2a2017;--line:#352a1f;--line-strong:#4a3a2a;
+            --brass:#cda45c;--brass-dim:#9a7c4a;--clay:#bd6145;--cream:#f0e6d6;--muted:#a48d74;
+            --muted-2:#6e5c48;--sage:#7aa06a;--font-d:'Fraunces',serif;--font-b:'Inter',sans-serif;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        body{font-family:var(--font-b);background:#0e0b08;color:var(--cream);min-height:100vh}
+        .split{display:flex;min-height:100vh}
+
+        .hero{display:none}
+        @media(min-width:860px){
+            .hero{display:flex;flex:1;align-items:center;padding:56px;
+                background:radial-gradient(130% 130% at 0% 0%, #241a10, #130d08 72%);
+                border-right:1px solid var(--line);position:relative;overflow:hidden}
+            .hero::after{content:"";position:absolute;right:-120px;bottom:-120px;width:380px;height:380px;
+                background:radial-gradient(circle, rgba(205,164,92,.14), transparent 65%);pointer-events:none}
+        }
+        .hero-in{max-width:430px;position:relative;z-index:1}
+        .hero .ico-lg{width:66px;height:66px;display:grid;place-items:center;color:var(--brass);
+            border:1px solid var(--line-strong);border-radius:18px;background:var(--surface);margin-bottom:28px}
+        .hero .ico-lg svg{width:34px;height:34px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+        .hero h1{font-family:var(--font-d);font-weight:600;font-size:46px;letter-spacing:.3px;margin-bottom:14px;line-height:1}
+        .hero>.hero-in>p{font-size:16px;color:var(--muted);line-height:1.55;margin-bottom:32px}
+        .hero ul{list-style:none;display:flex;flex-direction:column;gap:15px}
+        .hero li{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--cream)}
+        .hero li svg{width:19px;height:19px;color:var(--sage);stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+        .panel{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 24px}
+        .card{width:100%;max-width:380px}
+
+        .brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:28px}
+        @media(min-width:860px){.brand{display:none}}
+        .brand .ico{width:58px;height:58px;display:grid;place-items:center;color:var(--brass);
+            border:1px solid var(--line-strong);border-radius:16px;background:var(--surface)}
+        .brand .ico svg{width:30px;height:30px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+        .brand b{font-family:var(--font-d);font-weight:600;font-size:30px;letter-spacing:.3px;color:var(--cream)}
+
+        .form-head{margin-bottom:22px}
+        .form-head h2{font-family:var(--font-d);font-weight:600;font-size:27px;margin-bottom:4px}
+        .form-head span{font-size:14px;color:var(--muted)}
+
+        form{display:flex;flex-direction:column;gap:12px}
+        .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px}
+        .field input,.field select{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+            padding:14px 15px;color:var(--cream);font-family:inherit;font-size:15px;outline:none;transition:border-color .2s}
+        .field input::placeholder{color:var(--muted-2)}
+        .field input:focus,.field select:focus{border-color:var(--brass-dim)}
+        button{margin-top:8px;background:var(--brass);color:#1c1509;border:none;border-radius:12px;
+            padding:15px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:filter .2s}
+        button:hover{filter:brightness(1.06)}
+
+        .msg{font-size:13px;padding:12px 14px;border-radius:11px;margin-bottom:6px}
+        .msg.err{color:var(--clay);border:1px solid rgba(189,97,69,.4);background:rgba(189,97,69,.08)}
+
+        .alt{text-align:center;margin-top:20px;font-size:13.5px;color:var(--muted)}
+        .alt a{color:var(--brass);text-decoration:none;font-weight:600}
+    </style>
+</head>
+<body>
+<div class="split">
+
+    <div class="hero">
+        <div class="hero-in">
+            <div class="ico-lg">
+                <svg viewBox="0 0 24 24"><path d="M4 14 14 4a2.8 2.8 0 0 1 4 4L8 18H4z"/><path d="M4 18v2h16"/><path d="m11 7 3 3"/></svg>
+            </div>
+            <h1>Navalha</h1>
+            <p>Crie a conta da sua barbearia e comece a organizar agenda, clientes e caixa hoje mesmo.</p>
+            <ul>
+                <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Agendamentos pelo WhatsApp</li>
+                <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Controle de caixa e fiado</li>
+                <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Seus clientes sempre à mão</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="card">
+            <div class="brand">
+                <div class="ico">
+                    <svg viewBox="0 0 24 24"><path d="M4 14 14 4a2.8 2.8 0 0 1 4 4L8 18H4z"/><path d="M4 18v2h16"/><path d="m11 7 3 3"/></svg>
+                </div>
+                <b>Navalha</b>
+            </div>
+
+            <div class="form-head">
+                <h2>Criar conta</h2>
+                <span>Cadastre sua barbearia em 30 segundos</span>
+            </div>
+
+            <p class="msg err" th:if="${param.emailExiste}">Já existe uma conta com esse email.</p>
+            <p class="msg err" th:if="${param.erro}">Não foi possível criar a conta. Confira os dados.</p>
+
+            <form th:action="@{/registro}" method="post">
+                <div class="field">
+                    <label>Nome da barbearia</label>
+                    <input type="text" name="name" placeholder="Ex: Barbearia do Zé" required autofocus>
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="seu@email.com" required>
+                </div>
+                <div class="field">
+                    <label>Senha</label>
+                    <input type="password" name="password" placeholder="••••••••" required minlength="4">
+                </div>
+                <div class="field">
+                    <label>Plano</label>
+                    <select name="plan" required>
+                        <option value="BASICO">Básico — 1 barbeiro</option>
+                        <option value="PRO">Pro — vários barbeiros</option>
+                    </select>
+                </div>
+                <button type="submit">Criar conta</button>
+            </form>
+
+            <div class="alt">
+                Já tem conta? <a th:href="@{/login}">Entrar</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

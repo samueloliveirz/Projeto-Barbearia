@@ -2,6 +2,7 @@ package com.barbearia.controller;
 
 import com.barbearia.dto.AppointmentRequestDTO;
 import com.barbearia.dto.PayableDTO;
+import com.barbearia.dto.RegisterDTO;
 import com.barbearia.dto.ServiceDTO;
 import com.barbearia.enums.AccountStatus;
 import com.barbearia.enums.PaymentStatus;
@@ -11,16 +12,20 @@ import com.barbearia.model.Client;
 import com.barbearia.repository.AppointmentRepository;
 import com.barbearia.repository.ClientRepository;
 import com.barbearia.service.AppointmentService;
+import com.barbearia.service.AuthService;
 import com.barbearia.service.BarberService;
 import com.barbearia.service.FinanceService;
 import com.barbearia.service.PayableService;
 import com.barbearia.service.ServiceService;
+import com.barbearia.service.exceptions.EmailAlreadyExistsException;
 import com.barbearia.service.exceptions.HorarioIndisponivelException;
 import com.barbearia.service.exceptions.PlanLimitException;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,6 +47,7 @@ public class WebController {
     private final ServiceService serviceService;
     private final BarberService barberService;
     private final AppointmentService appointmentService;
+    private final AuthService authService;
 
     public WebController(AppointmentRepository appointmentRepository,
                          ClientRepository clientRepository,
@@ -49,7 +55,9 @@ public class WebController {
                          PayableService payableService,
                          ServiceService serviceService,
                          BarberService barberService,
-                         AppointmentService appointmentService) {
+                         AppointmentService appointmentService,
+                         AuthService authService) {
+        this.authService = authService;
         this.appointmentRepository = appointmentRepository;
         this.clientRepository = clientRepository;
         this.financeService = financeService;
@@ -62,6 +70,24 @@ public class WebController {
     @GetMapping("/login")
     public String login() {
         return "login";
+    }
+
+    @GetMapping("/registro")
+    public String registro() {
+        return "registro";
+    }
+
+    @PostMapping("/registro")
+    public String registrar(@Valid RegisterDTO dto, BindingResult result) {
+        if (result.hasErrors()) {
+            return "redirect:/registro?erro";
+        }
+        try {
+            authService.register(dto);
+        } catch (EmailAlreadyExistsException e) {
+            return "redirect:/registro?emailExiste";
+        }
+        return "redirect:/login?registrado";
     }
 
     @GetMapping("/painel")
