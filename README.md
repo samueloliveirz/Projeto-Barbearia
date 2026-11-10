@@ -17,9 +17,9 @@ Sistema completo de gestão para barbearias: agendamento pelo WhatsApp, painel w
 |---|---|
 | ![Painel](docs/painel.png) | ![Caixa](docs/caixa.png) |
 
-| Clientes |
-|---|
-| ![Clientes](docs/clientes.png) |
+| Agendamento pelo WhatsApp | Clientes |
+|---|---|
+| ![WhatsApp](docs/whatsapp.png) | ![Clientes](docs/clientes.png) |
 
 ---
 
@@ -47,8 +47,6 @@ O Navalha resolve os dois: **o cliente agenda sozinho pelo WhatsApp** (o bot res
 Bot conversacional que atende o cliente do começo ao fim — mostra os serviços, pega o horário, confirma e grava o agendamento no banco. Recebe as mensagens por **webhook** e responde em **TwiML**.
 
 ### Painel web (9 telas)
-- **Login** — entrada com email e senha, ou direto na conta demo
-- **Registro** — cadastro de uma barbearia nova, já escolhendo o plano
 - **Agenda do dia** — navegação por data, status de cada agendamento
 - **Novo agendamento** — criação manual pelo painel
 - **Clientes** — histórico de cortes e quanto cada um já gastou
@@ -114,7 +112,7 @@ Exceções de domínio próprias (`ResourceNotFoundException`, `BusinessExceptio
 git clone https://github.com/samueloliveirz/projeto-barbearia.git
 cd projeto-barbearia/barbearia
 
-# sobe o Postgres
+# sobe o Postgres (porta 5433)
 docker compose up -d
 
 # roda a aplicação
