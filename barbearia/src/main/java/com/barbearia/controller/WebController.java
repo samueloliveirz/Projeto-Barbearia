@@ -67,6 +67,11 @@ public class WebController {
         this.appointmentService = appointmentService;
     }
 
+    @GetMapping("/")
+    public String raiz() {
+        return "redirect:/login";
+    }
+
     @GetMapping("/login")
     public String login() {
         return "login";
