@@ -92,6 +92,27 @@ Exceções de domínio próprias (`ResourceNotFoundException`, `BusinessExceptio
 
 ---
 
+## 🤖 Como usei IA neste projeto
+
+Usei assistente de IA durante o desenvolvimento e acho justo dizer onde — tanto porque é a verdade quanto porque *onde* alguém usa a ferramenta diz bastante sobre como trabalha.
+
+**Onde a IA acelerou:**
+- **Front-end** — o CSS das telas e a montagem dos templates Thymeleaf. Eu defini quais telas existiam, o que cada uma mostra e como se comportam no celular; a IA escreveu o estilo.
+- **Configuração de infra** — Dockerfile multi-stage, variáveis de ambiente e o passo a passo do deploy no Render.
+- **Depuração** — ler stack trace e caçar erro de configuração mais rápido.
+
+**O que eu decidi e construí:**
+- O modelo de domínio inteiro e as regras de negócio — multi-tenancy, limite por plano, fiado, choque de horário
+- A máquina de estados da conversa do bot no WhatsApp
+- A camada de serviços e os cálculos do financeiro
+- Qual responsabilidade fica em qual camada
+
+**O que aprendi no caminho:** quando comecei, eu não sabia configurar Spring Security. O ponto em que o projeto precisou de duas cadeias de autenticação ao mesmo tempo — sessão pras telas e JWT pra API — me obrigou a entender `SecurityFilterChain`, `@Order` e `securityMatcher` de verdade, não só colar. O mesmo valeu pra fuso horário em container e pra `ddl-auto` do Hibernate.
+
+Trato IA como ferramenta: ela escreve rápido aquilo que eu consigo descrever com precisão. O que eu não conseguia descrever, eu tive que estudar antes.
+
+---
+
 ## 🗂️ Modelo de domínio
 
 | Entidade | Papel |
